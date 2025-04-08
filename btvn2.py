@@ -1,77 +1,48 @@
 import pandas as pd
-import random
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
-# 1. Data_Generation(): sinh dữ liệu giả lập và lưu ra CSV
-def Data_Generation():
-    columns = ['TumorSize', 'CellDensity', 'CellShape', 'CancerType']
-    cancer_types = {0: 'Breast', 1: 'Lung', 2: 'Stomach'}
-    
-    # sinh 100 mẫu training
-    train = []
-    for _ in range(100):
-        size = round(random.uniform(0.5, 5.0), 2)         # kích thước khối u (cm)
-        density = round(random.uniform(10, 100), 2)       # mật độ tế bào
-        shape = round(random.uniform(0.1, 1.0), 2)        # hình thái tế bào (độ bất thường)
-        label = random.choice(list(cancer_types.keys()))
-        train.append([size, density, shape, label])
-    
-    # sinh 10 mẫu testing
-    test = []
-    for _ in range(10):
-        size = round(random.uniform(0.5, 5.0), 2)
-        density = round(random.uniform(10, 100), 2)
-        shape = round(random.uniform(0.1, 1.0), 2)
-        label = random.choice(list(cancer_types.keys()))
-        test.append([size, density, shape, label])
-    
-    # lưu ra file
-    pd.DataFrame(train, columns=columns).to_csv('training_dataset.csv', index=False)
-    pd.DataFrame(test,  columns=columns).to_csv('testing_dataset.csv',  index=False)
-    print("Đã sinh và lưu dữ liệu training_dataset.csv, testing_dataset.csv")
+# Bước 1: Đọc dữ liệu
+df = pd.read_csv('synthetic_cancer_dataset.csv')  # File từ bài trước
 
-# 2. Load_Data(): nạp CSV vào DataFrame
-def Load_Data(path):
-    return pd.read_csv(path)
+# Bước 2: Encode nhãn ung thư
+le = LabelEncoder()
+df['cancer_type_encoded'] = le.fit_transform(df['cancer_type'])
 
-# 3. Bayes(): huấn luyện Gaussian Naive Bayes
-def Bayes(train_df):
-    X = train_df[['TumorSize', 'CellDensity', 'CellShape']]
-    y = train_df['CancerType']
-    model = GaussianNB()
-    model.fit(X, y)
-    return model
+# Bước 3: Tách dữ liệu thành X và y
+X = df[['tumor_size', 'cell_density', 'cell_morphology']]
+y = df['cancer_type_encoded']
 
-# 4. Testing(): dự đoán trên tập test
-def Testing(model, test_df):
-    X_test = test_df[['TumorSize', 'CellDensity', 'CellShape']]
-    y_true = test_df['CancerType']
-    y_pred = model.predict(X_test)
-    return y_true, y_pred
+# Bước 4: Chia train/test
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y)
 
-# 5. Performance(): đánh giá mô hình
-def Performance(y_true, y_pred):
-    acc = accuracy_score(y_true, y_pred)
-    print(f"Accuracy: {acc:.2f}")
-    print("\nClassification Report:")
-    print(classification_report(y_true, y_pred, target_names=['Breast','Lung','Stomach']))
+# Bước 5: Khởi tạo mô hình
+models = {
+    "Decision Tree": DecisionTreeClassifier(random_state=42),
+    "Naive Bayes": GaussianNB(),
+    "KNN": KNeighborsClassifier(n_neighbors=5)
+}
 
-# 6. __main__: chạy tuần tự tất cả
-def __main__():
-    # 1. Sinh dữ liệu
-    Data_Generation()
-    
-    # 2. Load training, huấn luyện
-    train_df = Load_Data('training_dataset.csv')
-    model = Bayes(train_df)
-    
-    # 3. Load testing, dự đoán
-    test_df = Load_Data('testing_dataset.csv')
-    y_true, y_pred = Testing(model, test_df)
-    
-    # 4. Đánh giá
-    Performance(y_true, y_pred)
+# Chuyển nhãn thành chuỗi để tránh lỗi khi dùng classification_report
+target_names = [str(cls) for cls in le.classes_]
 
-if __name__ == "__main__":
-    __main__()
+# Bước 6: Mở file để ghi kết quả
+with open("results.txt", "w", encoding="utf-8") as f:
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+
+        f.write(f"\n--- {name} ---\n")
+        f.write(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}\n")
+        f.write("Classification Report:\n")
+        f.write(classification_report(y_test, y_pred, target_names=target_names))
+        f.write("Confusion Matrix:\n")
+        f.write(str(confusion_matrix(y_test, y_pred)))
+        f.write("\n" + "=" * 60 + "\n")
+
+print("✅ Đã lưu kết quả vào file results.txt rồi nha")

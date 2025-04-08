@@ -1,0 +1,53 @@
+--- Decision Tree ---
+Accuracy: 0.3250
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.37      0.41      0.39        69
+           1       0.29      0.25      0.27        63
+           2       0.30      0.31      0.30        68
+
+    accuracy                           0.33       200
+   macro avg       0.32      0.32      0.32       200
+weighted avg       0.32      0.33      0.32       200
+Confusion Matrix:
+[[28 14 27]
+ [25 16 22]
+ [22 25 21]]
+============================================================
+
+--- Naive Bayes ---
+Accuracy: 0.3950
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.40      0.58      0.48        69
+           1       0.29      0.24      0.26        63
+           2       0.48      0.35      0.41        68
+
+    accuracy                           0.40       200
+   macro avg       0.39      0.39      0.38       200
+weighted avg       0.40      0.40      0.39       200
+Confusion Matrix:
+[[40 18 11]
+ [33 15 15]
+ [26 18 24]]
+============================================================
+
+--- KNN ---
+Accuracy: 0.2850
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.30      0.48      0.37        69
+           1       0.22      0.17      0.19        63
+           2       0.33      0.19      0.24        68
+
+    accuracy                           0.28       200
+   macro avg       0.28      0.28      0.27       200
+weighted avg       0.28      0.28      0.27       200
+Confusion Matrix:
+[[33 22 14]
+ [39 11 13]
+ [38 17 13]]
+============================================================
